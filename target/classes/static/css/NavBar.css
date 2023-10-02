@@ -1,0 +1,34 @@
+
+nav {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    background-color: #0056b3;
+}
+
+.nav-list {
+    list-style-type: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+}
+
+.nav-item {
+    margin-right: 10px;
+}
+
+.right {
+    margin-left: auto;
+}
+
+.nav-item a {
+    display: block;
+    color: white;
+    text-align: center;
+    padding: 14px 16px;
+    text-decoration: none;
+}
+
+.nav-item a:hover:not(.active) {
+    background-color: rgba(0, 123, 255, 0.4);
+}

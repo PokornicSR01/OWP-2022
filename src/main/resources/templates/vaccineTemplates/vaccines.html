@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <base th:href="@{/static}">
+    <title>Vaccines</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            min-height: 50vh;
+            background-color: #f5f5f5;
+            margin: 0;
+        }
+
+        .form-container {
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            width: 45%;
+            margin-top: 100px;
+        ;
+        }
+
+        .form-container:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2);
+        }
+
+        .form-container.right:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2);
+        }
+
+        .form-container.right {
+            width: 45%;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+
+        th, td {
+            padding: 10px;
+            border-bottom: 1px solid #ddd;
+            text-align: left;
+        }
+
+        caption {
+            font-weight: bold;
+            font-size: 1.2em;
+            margin-bottom: 10px;
+        }
+
+        form {
+            display: flex;
+            flex-direction: column;
+        }
+
+        label {
+            font-weight: bold;
+            margin-bottom: 5px;
+            color: #555;
+        }
+
+        input[type="text"],
+        select {
+            padding: 10px;
+            margin-bottom: 15px;
+            border: none;
+            border-radius: 5px;
+            background-color: #f5f5f5;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            transition: background-color 0.3s, box-shadow 0.3s;
+            width: 80%;
+        }
+
+        input[type="text"]:focus,
+        select:focus {
+            outline: none;
+            background-color: #e6f7ff;
+            box-shadow: 0 2px 8px rgba(0, 123, 255, 0.4);
+        }
+
+        input[type="submit"] {
+            background-color: #007bff;
+            color: #fff;
+            border: none;
+            padding: 10px;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        input[type="submit"]:hover {
+            background-color: #0056b3;
+        }
+
+        input[type="submit"]:active {
+            background-color: #003f80;
+        }
+    </style>
+</head>
+<body>
+
+<ul class="nav-list">
+    <li class="nav-item" th:if="!${#strings.equals(loggedUser.getRole(), 'PATIENT')}"><a href="vaccineMakers">Vaccine makers</a></li>
+    <li class="nav-item"><a href="vaccines">Vaccines</a></li>
+    <li class="nav-item" th:if="${#strings.equals(loggedUser.getRole(), 'ADMINISTRATOR')}"><a href="news">News</a></li>
+    <li class="nav-item" th:if="${#strings.equals(loggedUser.getRole(), 'MEDICAL_STAFF')}"><a href="applications">Applications</a></li>
+    <li class="nav-item" th:if="!${#strings.equals(loggedUser.getRole(), 'PATIENT')}"><a href="requests">Requests</a></li>
+    <li class="nav-item right"><a href="users/profile">Profile</a></li>
+    <li class="nav-item right"><a href="users/logout">Logout</a></li>
+</ul>
+
+<div class="form-container">
+    <table class="hover">
+        <caption>Vaccines</caption>
+        <h3 th:if="${#strings.equals(loggedUser.getRole(), 'MEDICAL_STAFF')}">Vaccine Sorting</h3>
+        <form action="vaccines" method="get" th:if="${#strings.equals(loggedUser.getRole(), 'MEDICAL_STAFF')}">
+            <label for="sortAttribute">Sort by:</label>
+            <select name="sortAttribute" id="sortAttribute" onchange="this.form.submit()">
+                <option value="">Default</option>
+                <option value="name_asc">Name ASC</option>
+                <option value="name_desc">Name DESC</option>
+                <option value="manufacturer_asc">Manufacturer ASC</option>
+                <option value="manufacturer_desc">Manufacturer DESC</option>
+                <option value="country_asc">Country ASC</option>
+                <option value="country_desc">Country DESC</option>
+                <option value="quantity_asc">Quantity ASC</option>
+                <option value="quantity_desc">Quantity DESC</option>
+            </select>
+        </form>
+
+        <form action="vaccines" method="get" th:if="${#strings.equals(loggedUser.getRole(), 'MEDICAL_STAFF')}">
+            <input type="text" name="name" placeholder="Name">
+            <input type="text" name="manufacturer" placeholder="Manufacturer">
+            <input type="text" name="country" placeholder="Country">
+            <input type="number" name="minQuantity" placeholder="Min Quantity">
+            <input type="number" name="maxQuantity" placeholder="Max Quantity">
+            <input type="submit" value="Search">
+        </form>
+
+        <tr>
+            <th>Name</th>
+            <th th:if="${#strings.equals(loggedUser.getRole(), 'MEDICAL_STAFF')}">Available Quantity</th>
+            <th>Manufacturer</th>
+            <th>Production Country</th>
+            <th></th>
+        </tr>
+        <tr th:each="itVaccine, status: ${vaccines}">
+            <td th:text="${itVaccine.name}"></td>
+            <td th:if="${#strings.equals(loggedUser.getRole(), 'MEDICAL_STAFF')}" th:text="${itVaccine.availableQuantity}"></td>
+            <td th:text="${itVaccine.vaccineMaker.manufacturer}"></td>
+            <td th:text="${itVaccine.vaccineMaker.productionCountry}"></td>
+            <td th:if="${canUserGetMoreVaccines}"><a th:href="|applications/apply?id=${itVaccine.id}|" th:text="ApplyForVaccine"></a></td>
+            <td th:if="${#strings.equals(loggedUser.getRole(), 'PATIENT')} == false"><a th:href="|vaccines/details?id=${itVaccine.id}|" th:text="details"></a></td>
+            <td th:if="${#strings.equals(loggedUser.getRole(), 'ADMINISTRATOR')}">
+                <form method="post" action="vaccines/delete" >
+                    <input type="hidden"  name="id"  th:value="${itVaccine.id}">
+                    <input type="submit"  value="Delete" >
+                </form>
+            </td>
+        </tr>
+    </table>
+</div>
+
+<div class="form-container right" th:if="${#strings.equals(loggedUser.getRole(), 'MEDICAL_STAFF')}">
+
+    <form method="post" action="vaccines/add">
+        <table class="hover">
+            <caption>Vaccine</caption>
+            <tr><th>Vaccine name</th><td><input type="text" value="" name="name"/></td></tr>
+            <tr>
+                <th>
+                    <label for="makerId">Vaccine maker:</label>
+                </th>
+                <td>
+                    <select id="makerId" name="makerId">
+                        <option th:each="maker : ${vaccineMakers}" th:value="${maker.id}" th:text="${maker.manufacturer}">
+                    </select>
+                </td>
+            </tr>
+            <tr><th></th><td><input type="submit" value="Add"/></td></tr>
+        </table>
+    </form>
+</div>
+</body>
+</html>

@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <base th:href="@{/static}">
+  <title>Vaccine Makers</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f5f5f5;
+      margin: 0;
+      padding: 0;
+    }
+
+    .container {
+      display: flex;
+      justify-content: space-between;
+      margin: 20px;
+      padding-top: 30px;
+    }
+
+    .section:hover {
+      transform: translateY(-10px);
+      box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2);
+    }
+
+    .section {
+      background-color: #fff;
+      padding: 20px;
+      border-radius: 10px;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+      width: 45%;
+      margin-top: 20px;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 20px;
+    }
+
+    th, td {
+      padding: 10px;
+      border-bottom: 1px solid #ddd;
+      text-align: left;
+    }
+
+    caption {
+      font-weight: bold;
+      font-size: 1.2em;
+      margin-bottom: 10px;
+    }
+
+    form {
+      display: flex;
+      flex-direction: column;
+    }
+
+    label {
+      font-weight: bold;
+      margin-bottom: 5px;
+      color: #555;
+    }
+
+    input[type="text"] {
+      padding: 10px;
+      margin-bottom: 15px;
+      border: none;
+      border-radius: 5px;
+      background-color: #f5f5f5;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+      transition: background-color 0.3s, box-shadow 0.3s;
+    }
+
+    input[type="text"]:focus {
+      outline: none;
+      background-color: #e6f7ff;
+      box-shadow: 0 2px 8px rgba(0, 123, 255, 0.4);
+    }
+
+    input[type="submit"] {
+      background-color: #007bff;
+      color: #fff;
+      border: none;
+      padding: 10px;
+      border-radius: 5px;
+      cursor: pointer;
+      transition: background-color 0.3s;
+    }
+
+    input[type="submit"]:hover {
+      background-color: #0056b3;
+    }
+
+    input[type="submit"]:active {
+      background-color: #003f80;
+    }
+  </style>
+</head>
+<body>
+
+<ul class="nav-list">
+  <li class="nav-item" th:if="!${#strings.equals(loggedUser.getRole(), 'PATIENT')}"><a href="vaccineMakers">Vaccine makers</a></li>
+  <li class="nav-item"><a href="vaccines">Vaccines</a></li>
+  <li class="nav-item" th:if="${#strings.equals(loggedUser.getRole(), 'ADMINISTRATOR')}"><a href="news">News</a></li>
+  <li class="nav-item" th:if="${#strings.equals(loggedUser.getRole(), 'MEDICAL_STAFF')}"><a href="applications">Applications</a></li>
+  <li class="nav-item" th:if="!${#strings.equals(loggedUser.getRole(), 'PATIENT')}"><a href="requests">Requests</a></li>
+  <li class="nav-item right"><a href="users/profile">Profile</a></li>
+  <li class="nav-item right"><a href="users/logout">Logout</a></li>
+</ul>
+
+<div class="container" th:if="${loggedUser.role != 'PACIJENT'}">
+  <div class="section">
+    <table>
+      <caption>Vaccine Makers</caption>
+      <tr>
+        <th>Manufacturer</th>
+        <th>Production country</th>
+        <th></th>
+      </tr>
+      <tr th:each="itVaccineMaker, status: ${vaccineMakers}">
+        <td><a th:href="|vaccineMakers/details?id=${itVaccineMaker.id}|" th:text="${itVaccineMaker.manufacturer}"></a></td>
+        <td th:text="${itVaccineMaker.productionCountry}"></td>
+        <td>
+          <form method="post" action="vaccineMakers/delete">
+            <input type="hidden" name="id" th:value="${itVaccineMaker.id}">
+            <input type="submit" value="delete">
+          </form>
+        </td>
+      </tr>
+    </table>
+  </div>
+  <div class="section">
+    <form method="post" action="vaccineMakers/add">
+      <table>
+        <caption>Add vaccine maker</caption>
+        <tr><th>Manufacturer:</th><td><input type="text" value="" name="manufacturer"/></td></tr>
+        <tr><th>Production country:</th><td><input type="text" value="" name="productionCountry"/></td></tr>
+        <tr><th></th><td><input type="submit" value="Add"/></td></tr>
+      </table>
+    </form>
+  </div>
+</div>
+
+<div th:if="${loggedUser.role == 'PACIJENT'}">
+  <h3>NOT ALLOWED</h3>
+</div>
+
+</body>
+</html>

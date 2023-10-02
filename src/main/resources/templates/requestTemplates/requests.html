@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Requests</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f5f5f5;
+            margin: 0;
+            padding: 20px;
+        }
+
+        .table-container {
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            margin-bottom: 20px;
+        }
+
+        .table-container.left {
+            margin-top: 20px;
+            width: 40%;
+            float: left;
+        }
+
+        .table-container.right {
+            width: 50%;
+            float: right;
+            margin-top: 20px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 0;
+        }
+
+        th, td {
+            padding: 10px;
+            border-bottom: 1px solid #ddd;
+            text-align: left;
+        }
+
+        caption {
+            font-weight: bold;
+            font-size: 1.2em;
+            margin-bottom: 10px;
+        }
+
+        input[type="text"],
+        input[type="number"],
+        input[type="submit"] {
+            padding: 8px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            transition: background-color 0.3s ease-in-out, color 0.3s ease-in-out, border-color 0.3s ease-in-out;
+            font-size: 14px;
+        }
+
+        input[type="text"]:hover,
+        input[type="number"]:hover,
+        input[type="submit"]:hover {
+            background-color: #3498db;
+            color: #fff;
+            border-color: #3498db;
+        }
+    </style>
+</head>
+<body>
+<ul class="nav-list">
+    <li class="nav-item" th:if="!${#strings.equals(loggedUser.getRole(), 'PATIENT')}"><a href="vaccineMakers">Vaccine makers</a></li>
+    <li class="nav-item"><a href="vaccines">Vaccines</a></li>
+    <li class="nav-item" th:if="${#strings.equals(loggedUser.getRole(), 'ADMINISTRATOR')}"><a href="news">News</a></li>
+    <li class="nav-item" th:if="${#strings.equals(loggedUser.getRole(), 'MEDICAL_STAFF')}"><a href="applications">Applications</a></li>
+    <li class="nav-item" th:if="!${#strings.equals(loggedUser.getRole(), 'PATIENT')}"><a href="requests">Requests</a></li>
+    <li class="nav-item right"><a href="users/profile">Profile</a></li>
+    <li class="nav-item right"><a href="users/logout">Logout</a></li>
+</ul>
+
+<div class="table-container" th:if="${#strings.equals(user.getRole(), 'ADMINISTRATOR')}">
+    <table>
+        <caption>Requests</caption>
+        <tr>
+            <th>Request reason: </th>
+            <th>Coment</th>
+            <th>Vaccine count</th>
+            <th>Vaccine</th>
+            <th>Created at</th>
+            <th></th>
+            <th></th>
+            <th></th>
+        </tr>
+        <tr th:each="request, status: ${requests}">
+            <td th:text="${request.requestReason}"></td>
+            <td th:text="${request.comment}"></td>
+            <td th:text="${request.count}"></td>
+            <td th:text="${request.vaccine.name}"></td>
+            <td th:text="${request.createdAt}"></td>
+            <td th:if="${returnRequest == null}">
+                <form method="post" action="requests/approve" >
+                    <input type="hidden"  name="id"  th:value="${request.id}">
+                    <input type="submit"  value="Approve" >
+                </form>
+            </td>
+            <td th:if="${declineRequest == null}"><a th:href="|requests/decline?id=${request.id}|">Decline</a></td>
+            <td th:if="${returnRequest == null}"><a th:href="|requests/return?id=${request.id}|">Return</a></td>
+        </tr>
+    </table>
+</div>
+
+<div class="table-container" th:if="${#strings.equals(user.getRole(), 'MEDICAL_STAFF')}">
+        <table>
+            <caption>Requests</caption>
+            <tr>
+                <th>Request reason: </th>
+                <th>Coment</th>
+                <th>Vaccine count</th>
+                <th>Vaccine</th>
+                <th>Created at</th>
+                <th></th>
+            </tr>
+            <tr th:each="request, status: ${requestss}">
+                <td th:text="${request.requestReason}"></td>
+                <td th:text="${request.comment}"></td>
+                <td th:text="${request.count}"></td>
+                <td th:text="${request.vaccine.name}"></td>
+                <td th:text="${request.createdAt}"></td>
+                <td><a th:href="|requests/update?id=${request.id}|">Update</a></td>
+            </tr>
+        </table>
+</div>
+
+<div class="table-container" th:if="${#strings.equals(user.getRole(), 'MEDICAL_STAFF')}">
+    <table>
+        <caption>Declined requests</caption>
+        <tr>
+            <th>Request reason: </th>
+            <th>Coment</th>
+            <th>Vaccine count</th>
+            <th>Vaccine</th>
+            <th>Created at</th>
+        </tr>
+        <tr th:each="request, status: ${declinedRequestss}">
+            <td th:text="${request.requestReason}"></td>
+            <td th:text="${request.comment}"></td>
+            <td th:text="${request.count}"></td>
+            <td th:text="${request.vaccine.name}"></td>
+            <td th:text="${request.createdAt}"></td>
+        </tr>
+    </table>
+</div>
+
+<div class="table-container left" th:if="${#strings.equals(user.getRole(), 'MEDICAL_STAFF')}">
+    <div th:if="${editRequest == null}">
+        <table>
+            <caption>Create request</caption>
+            <form method="post" action="requests/create">
+                <tr><th>Request reason:</th><td><input type="text" value="" name="reason"/></td></tr>
+                <tr><th>Count:</th><td><input type="number" value="0" name="count"/></td></tr>
+                <tr>
+                    <th>
+                        <label for="vaccineId">Vaccine:</label>
+                    </th>
+                    <td>
+                        <select id="vaccineId" name="vaccineId">
+                            <option th:each="vaccine : ${vaccines}" th:value="${vaccine.id}" th:text="${vaccine.name}">
+                        </select>
+                    </td>
+                </tr>
+                <tr><th></th><td><input type="submit" value="Create"/></td></tr>
+            </form>
+        </table>
+    </div>
+</div>
+
+<div class="table-container right" th:if="${editRequest != null}">
+    <table>
+        <caption>Update request</caption>
+        <form method="post" action="update">
+            <input type="hidden" name="id" th:value="${editRequest.id}"/>
+            <tr><th>Reason:</th><td><input type="text" th:value="${editRequest.getRequestReason()}" name="reason"/></td></tr>
+            <tr><th>Count:</th><td><input type="text" th:value="${editRequest.getCount()}" name="count"/></td></tr>
+            <tr><th></th><td><input type="submit" value="Update"/></td></tr>
+        </form>
+    </table>
+</div>
+
+<div class="table-container left" th:if="${returnRequest != null}">
+    <table>
+        <caption>Send back request</caption>
+        <form method="post" action="return">
+            <input type="hidden" name="id" th:value="${returnRequest.id}"/>
+            <tr><th>Comment:</th><td><input type="text" name="comment"/></td></tr>
+            <tr><th></th><td><input type="submit" value="Send"/></td></tr>
+        </form>
+    </table>
+</div>
+
+<div class="table-container right" th:if="${declineRequest != null}">
+    <table>
+        <caption>Decline request</caption>
+        <form method="post" action="decline">
+            <input type="hidden" name="id" th:value="${declineRequest.id}"/>
+            <tr><th>Comment:</th><td><input type="text" name="comment"/></td></tr>
+            <tr><th></th><td><input type="submit" value="Decline"/></td></tr>
+        </form>
+    </table>
+</div>
+
+</body>
+</html>

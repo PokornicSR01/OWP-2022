@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+  <!DOCTYPE html>
+  <html xmlns:th="http://www.thymeleaf.org">
+  <head>
+    <meta charset="UTF-8">
+    <base th:href="@{/static}">
+    <title>Applications for vaccines</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        background-color: #f5f5f5;
+        margin: 0;
+        padding: 20px;
+      }
+
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 20px;
+      }
+
+      th, td {
+        padding: 10px;
+        border-bottom: 1px solid #ddd;
+        text-align: left;
+      }
+
+      caption {
+        font-weight: bold;
+        font-size: 1.2em;
+        margin-bottom: 10px;
+      }
+
+      input[type="submit"] {
+        padding: 6px 12px;
+        border: none;
+        border-radius: 5px;
+        transition: background-color 0.3s ease-in-out, color 0.3s ease-in-out;
+        font-size: 14px;
+        cursor: pointer;
+        background-color: #3498db;
+        color: #fff;
+      }
+
+      input[type="submit"]:hover {
+        background-color: #2980b9;
+      }
+    </style>
+  </head>
+  <body>
+
+  <ul class="nav-list">
+    <li class="nav-item" th:if="!${#strings.equals(loggedUser.getRole(), 'PATIENT')}"><a href="vaccineMakers">Vaccine makers</a></li>
+    <li class="nav-item"><a href="vaccines">Vaccines</a></li>
+    <li class="nav-item" th:if="${#strings.equals(loggedUser.getRole(), 'ADMINISTRATOR')}"><a href="news">News</a></li>
+    <li class="nav-item" th:if="${#strings.equals(loggedUser.getRole(), 'MEDICAL_STAFF')}"><a href="applications">Applications</a></li>
+    <li class="nav-item" th:if="!${#strings.equals(loggedUser.getRole(), 'PATIENT')}"><a href="requests">Requests</a></li>
+    <li class="nav-item right"><a href="users/profile">Profile</a></li>
+    <li class="nav-item right"><a href="users/logout">Logout</a></li>
+  </ul>
+
+  <table>
+    <caption>Applications for vaccines</caption>
+
+    <form action="applications" method="get">
+      <input type="text" name="firstName" placeholder="First name">
+      <input type="text" name="lastName" placeholder="Last name">
+      <input type="text" name="UPIN" placeholder="UPIN">
+      <input type="submit" value="Search">
+    </form>
+
+    <tr>
+      <th>Patient first name</th>
+      <th>Patient last name</th>
+      <th>Patient UPIN</th>
+      <th>Vaccine</th>
+      <th>Appointment time</th>
+      <th></th>
+      <th></th>
+    </tr>
+
+    <tr th:each="itApplication, status: ${applications}">
+      <td th:text="${itApplication.patient.firstName}"></td>
+      <td th:text="${itApplication.patient.lastName}"></td>
+      <td th:text="${itApplication.patient.uniquePersonalIdentificationNumber}"></td>
+      <td th:text="${itApplication.vaccine.name}"></td>
+      <td th:text="${itApplication.appointmentTime}"></td>
+      <td>
+        <form method="post" action="applications/approve" >
+          <input type="hidden"  name="id"  th:value="${itApplication.id}">
+          <input type="submit"  value="Approve" >
+        </form>
+      </td>
+      <td>
+        <form method="post" action="applications/decline" >
+          <input type="hidden"  name="id"  th:value="${itApplication.id}">
+          <input type="submit"  value="Decline" >
+        </form>
+      </td>
+    </tr>
+  </table>
+
+  </body>
+  </html>

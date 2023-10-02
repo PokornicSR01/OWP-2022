@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <base th:href="@{/static}">
+    <title>News</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f5f5f5;
+            margin: 0;
+            padding: 20px;
+        }
+
+        .table-container {
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            margin-bottom: 20px;
+        }
+
+        .table-container.left {
+            margin-top: 20px;
+            width: 40%;
+            float: left;
+        }
+
+        .table-container.right {
+            width: 50%;
+            float: right;
+            margin-top: 20px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 0;
+        }
+
+        th, td {
+            padding: 10px;
+            border-bottom: 1px solid #ddd;
+            text-align: left;
+        }
+
+        caption {
+            font-weight: bold;
+            font-size: 1.2em;
+            margin-bottom: 10px;
+        }
+
+        input[type="text"],
+        input[type="number"],
+        input[type="submit"] {
+            padding: 8px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            transition: background-color 0.3s ease-in-out, color 0.3s ease-in-out, border-color 0.3s ease-in-out;
+            font-size: 14px;
+        }
+
+        input[type="text"]:hover,
+        input[type="number"]:hover,
+        input[type="submit"]:hover {
+            background-color: #3498db;
+            color: #fff;
+            border-color: #3498db;
+        }
+    </style>
+</head>
+
+<ul class="nav-list">
+    <li class="nav-item" th:if="!${#strings.equals(loggedUser.getRole(), 'PATIENT')}"><a href="vaccineMakers">Vaccine makers</a></li>
+    <li class="nav-item"><a href="vaccines">Vaccines</a></li>
+    <li class="nav-item" th:if="${#strings.equals(loggedUser.getRole(), 'ADMINISTRATOR')}"><a href="news">News</a></li>
+    <li class="nav-item" th:if="${#strings.equals(loggedUser.getRole(), 'MEDICAL_STAFF')}"><a href="applications">Applications</a></li>
+    <li class="nav-item" th:if="!${#strings.equals(loggedUser.getRole(), 'PATIENT')}"><a href="requests">Requests</a></li>
+    <li class="nav-item right"><a href="users/profile">Profile</a></li>
+    <li class="nav-item right"><a href="users/logout">Logout</a></li>
+</ul>
+
+<body>
+<div class="table-container">
+    <table>
+        <caption>Todays news</caption>
+        <tr>
+            <th>Number of patients on ventilators</th>
+            <th>Number of tested last 24 hours</th>
+            <th>Number of hospitalized</th>
+            <th>Number of infected last 24 hours</th>
+            <th>Total number of infected</th>
+        </tr>
+        <tr>
+            <td th:text="${newsAboutPatients.numberOfPatientsOnVentilators}"></td>
+            <td th:text="${newsAboutPatients.numberOfTestedLast24hours}"></td>
+            <td th:text="${newsAboutPatients.numberOfHospitalized}"></td>
+            <td th:text="${newsAboutPatients.numberOfInfectedLast24hours}"></td>
+            <td th:text="${newsAboutPatients.totalNumberOfInfected}"></td>
+        </tr>
+    </table>
+</div>
+
+<div class="table-container left">
+    <table>
+        <caption>News</caption>
+        <tr>
+            <th>Title</th>
+            <th>Content</th>
+            <th>Publication Date</th>
+        </tr>
+        <tr th:each="itNews, status: ${listOfNews}">
+            <td th:text="${itNews.title}"></td>
+            <td th:text="${itNews.content}"></td>
+            <td th:text="${itNews.publicationDate}"></td>
+        </tr>
+    </table>
+</div>
+
+<div class="table-container right">
+    <table>
+        <caption>Update news about patients</caption>
+        <form method="post" action="newsAboutPatients/update">
+            <tr><th>Number of patients on ventilators:</th><td><input type="number" value="0" name="numberOfPatientsOnVentilators"/></td></tr>
+            <tr><th>Number of tested last 24 hours:</th><td><input type="number" value="0" name="numberOfTestedLast24hours"/></td></tr>
+            <tr><th>Number of hospitalized:</th><td><input type="number" value="0" name="numberOfHospitalized"/></td></tr>
+            <tr><th>Number of infected last 24 hours:</th><td><input type="number" value="0" name="numberOfInfectedLast24hours"/></td></tr>
+            <tr><th></th><td><input type="submit" value="Update"/></td></tr>
+        </form>
+    </table>
+</div>
+
+<div class="table-container right">
+    <table>
+        <caption>Add News</caption>
+        <form method="post" action="news/add">
+            <tr><th>Title:</th><td><input type="text" value="" name="title"/></td></tr>
+            <tr><th>Content:</th><td><input type="text" value="" name="content"/></td></tr>
+            <tr><th></th><td><input type="submit" value="Add"/></td></tr>
+        </form>
+    </table>
+</div>
+</body>
+</html>
